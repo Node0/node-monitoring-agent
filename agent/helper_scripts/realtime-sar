@@ -1,0 +1,232 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:   sar custom daemon
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Daemonizes sar for fast async cpu usage via tailing /var/log/sar/cpuPercStat.log
+# Description:       starts custom sar daemon for realtime cpu percentage analytics using start-stop-daemon
+### END INIT INFO
+
+Rst=$(tput sgr0)           # Reset
+Bld=$(tput bold)           # Bold
+Rred=${Bld}$(tput setaf 1) # Red
+Ggrn=${Bld}$(tput setaf 2) # Green
+
+
+depCheck=0;
+function dependencyCheck {
+daemonMaker=$(which daemonize);
+sarBinary=$(which sar);
+
+    if [[ ! -f "${sarBinary}" ]];
+    then
+        echo "${Rred}Critical Error:${Rst} Sar binary is missing!";
+        echo "Please install the 'sysstat' package before proceeding.";
+        exit 1;
+    fi
+
+    if [[ ! -f "${daemonMaker}" ]];
+    then
+        echo "${Rred}Critical Error:${Rst} 'daemonize' binary not found.";
+        echo "Please download, make & install 'daemonize' before proceeding.";
+        echo "Daemonize is available via https://github.com/bmc/daemonize";
+        echo "or via https://github.com/Node0/daemonize  and readily compiles";
+        echo "on nearly every flavor of *nix.";
+        exit 1;
+    fi
+
+    if [[ -f "${sarBinary}" && -f "${daemonMaker}" ]];
+    then
+        depCheck=1;
+    fi
+}
+dependencyCheck;
+
+# If you update the command line options to sar which this script runs
+# You must update the detection regex string assigned to the procPattern variable.
+cmd="sar";
+args="-P ALL -u ALL 1";
+
+daemonUser="root";
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON='/usr/bin/sar'
+NAME='Realtime-SAR'
+DESC='Realtime-SAR daemon'
+
+pidDir='/var/run/sar';
+logDir='/var/log/sar';
+pidFile='/var/run/sar/sar.pid';
+liveLogFile="/var/log/sar/cpuPercStat.log";
+monitorLogFile="/var/log/sar/realtime-sar-monitor.log";
+
+# Detection regex used for healhCheck persistence mechanism
+cmdAndArgs="${DAEMON} ${args}";
+rgXform=$(echo "$cmdAndArgs" | \sed -r 's~ ~\\s~g' | \sed -r 's~\/~\\/~g' | \sed -r 's~\-~\\-~');
+procPattern="${rgXform}.*$";
+#echo "${cmdAndArgs}";
+#echo "${procPattern}";
+
+# Utility function for initial-installation
+function install {
+    if (( depCheck == 1 ))
+    then
+        if [[ ! -d "${pidDir}" ]];
+        then
+            mkdir "${pidDir}";
+            chown  ${daemonUser}:${daemonUser} ${pidDir};
+            chmod 0755 "${pidDir}";
+        fi
+
+        if [[ ! -d "${logDir}" ]];
+        then
+            mkdir "${logDir}";
+            chown ${daemonUser}:${daemonUser} ${logDir};
+            chmod 0755 "${logDir}";
+        fi
+    else
+        echo "Missing dependencies: 'sysstat' package or 'daemonize' binary, see https://github.com/bmc/daemonize";
+        echo "Exiting.";
+    exit 1;
+    fi
+}
+
+
+#Make a date-string
+function dateString {
+    if [[ $1 == "" ]]; then
+        dateStrng=$(\date +'%a %m-%d-%Y at %k%Mh %Ss' |\sed -r "s~(\s)~_~g" |\sed -r "s~(__)~_~g" );
+        echo "${dateStrng}";
+    fi
+    if [[ $1 == "epoch" ]]; then
+        dateStrng=$(\date +'%s' );
+        echo "${dateStrng}";
+    fi
+    if [[ $1 == "hcode" ]]; then
+        dateStrng=$(\date +'%a %m-%d-%Y at %k%Mh %Ss' |\sed -r "s~(\s)~_~g" |\sed -r "s~(__)~_~g" );
+        hashCode=$(\date +'%N' |\md5sum |\cut -b 1,3,5,7,9);
+        echo ""${dateStrng}"-"${hashCode}"";
+    fi
+}
+
+
+function pidDirCheck {
+    if [[ ! -d "${pidDir}" ]];
+    then
+        mkdir "${pidDir}";
+        chown ${daemonUser}:${daemonUser} ${pidDir};
+        chmod 0755 "${pidDir}";
+    fi
+}
+pidDirCheck
+
+function getRunningPIDs {
+    processPIDS=();
+    for i in $( \ps aux |\grep -v grep| \grep -Pi '('${procPattern}')' | \awk '{print $2}');
+    do
+        processPIDS+=("${i}");
+    done
+        echo "${processPIDS[@]}";
+}
+
+
+function hc {
+    now=$(date +%s%3N);
+    lastModified=$(echo "$(stat -c %Y ${liveLogFile}) * 1000" | bc);
+    status=$(echo "$now - $lastModified" | bc);
+    #echo ${status};
+    if (( ${status} < 2500 ));
+    then
+        echo '1';
+    else
+        echo '0';
+    fi
+
+    if [[ ${1} == 'dbg'  ]];
+    then
+    echo "${status}";
+    fi
+}
+
+function healthCheck {
+    resultCheck=$(hc);
+    if [[ "${resultCheck}" == '1' ]];
+    then
+        echo "${Bld}* ${Rst}${Ggrn}Realtime-sar is running.${Rst}";
+    else
+        echo "${Bld}* ${Rst}${Rred}Realtime-sar is stopped. ${Rst}";
+    fi
+}
+
+
+
+function start {
+# daemonize [-a] [-c directory] [-e stderr] [-o stdout] [-p pidfile] [-l lockfile] [-u user] [-v] path [arg] ...
+initString="$(which daemonize) -v -p ${pidFile} -o ${liveLogFile} -u ${daemonUser} ${DAEMON} ${args}";
+eval "${initString}";
+}
+
+function stop {
+    for k in $(getRunningPIDs| tr " " "\n");
+    do
+        kill -9 "${k}";
+    done;
+}
+
+
+function flush {
+    truncate --size=0 "${liveLogFile}";
+    chmod 0644 "${liveLogFile} ${monitorLogFile};"
+    echo "Flushed realtime-sar cpu log at $(dateString)" >> "${monitorLogFile}";
+    restart;
+}
+
+function persist {
+    resultCheck=$(hc);
+    if [[ "${resultCheck}" == '1' ]];
+    then
+        echo "${Bld}* ${Rst}${Ggrn}Realtime-sar is up.${Rst} Going back to sleep.";
+    else
+        echo "${Bld}* ${Rst}${Rred}Realtime-sar is down.${Rst} Re-starting...";
+        stop
+        flush
+        start
+    fi
+}
+
+function restart {
+    stop;
+    start;
+}
+
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    status)
+        healthCheck
+        ;;
+    persist)
+        persist
+        ;;
+    flush)
+        flush
+        ;;
+    install)
+        install
+        ;;
+    *)
+        echo "Usage: $NAME {start|stop|restart|status|persist|flush}" >&2
+        exit 3
+        ;;
+esac
+:
+
