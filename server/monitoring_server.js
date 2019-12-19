@@ -12,7 +12,7 @@ var fs = require("fs"),
 
 // Establish connection to crate database
 crate.connect ('localhost', 4200);
-// sage analytics api port
+// Monitoring analytics collection api port
 var port = 7500;
 // Start express
 var app = express();
