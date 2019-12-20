@@ -10,6 +10,10 @@ A temporally high resolution Nodejs based montoring system for EC2.
 ### candidates as configured in `/etc/crate/crate.conf`. It is helpful to have Elasticsearch knowledge when reasoning about CrateDB.  
   
     
+### Utilize the SQL schema files available under: `SQL/SQL_table_schemas` in order to create the tables which the server requires in order to function. You can actually enter this SQL directly from CrateDB's web administration console as it features a nice SQL terminal.  
+  
+  
+    
     
 ## NodeJS Infrastructure setup instructions.  
 
