@@ -18,7 +18,7 @@ A temporally high resolution Nodejs based montoring system for EC2.
 ## NodeJS Infrastructure setup instructions.  
 
 
-### Server setup.  
+## Server setup.  
   
 #### 1.) Create an EC2 instance, install node (0.12+), and pm2 globally, Centos is recommended but any modern linux variant will do.
 
@@ -32,7 +32,7 @@ A temporally high resolution Nodejs based montoring system for EC2.
 ####     PM2 is the recommended process manager to call from systemd for this purpose.
     
     
-### Monitoring Agent setup.  
+## Monitoring Agent setup.  
   
 #### 1.) You'll be creating an AMI from the results of your configuration of this server, so choose your base EC2 compute node linux distribution and ssh to it.
 
@@ -48,7 +48,7 @@ A temporally high resolution Nodejs based montoring system for EC2.
     
       
         
-### Grafana as "View Layer"  
+## Grafana as "View Layer"  
   
 #### You can now setup a Grafana server and configure the elasticsearch (or CrateDB if you prefer) datasource, to connect to the database, and write auto-completion enabled, interactive SQL/ES visualization queries to visualize your data, setup your alerting and so on.  
     
