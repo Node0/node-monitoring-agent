@@ -43,4 +43,14 @@ A temporally high resolution Nodejs based montoring system for EC2.
 #### 4.) Run `node monitoring-agent.js` to startup the monitoring agent server.  
   
 #### 5.) In production you'll also need to setup a systemd service that starts the monitoring agent upon startup.  
-####     PM2 is the recommended process manager to call from systemd for this purpose.
+####     PM2 is the recommended process manager to call from systemd for this purpose. 
+  
+    
+      
+        
+### Grafana as "View Layer"  
+  
+#### You can now setup a Grafana server and configure the elasticsearch (or CrateDB if you prefer) datasource, to connect to the database, and write auto-completion enabled, interactive SQL/ES visualization queries to visualize your data, setup your alerting and so on.  
+    
+      
+    
