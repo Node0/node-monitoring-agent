@@ -1,5 +1,5 @@
 # node-monitoring-agent
-A temporally high resolution Nodejs based montoring system for EC2.  
+#### A temporally high resolution Nodejs based montoring system for EC2.  
   
 ## Crate DB setup.  
 
