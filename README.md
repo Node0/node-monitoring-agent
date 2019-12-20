@@ -32,14 +32,19 @@
     
 ## Monitoring Agent setup.  
   
-#### 1.) You'll be creating an AMI from the results of your configuration of this server, so choose your base EC2 compute node linux distribution and ssh to it.
+#### 1.) You'll be creating an AMI from the results of your configuration of this server, so choose your base EC2 compute node linux distribution and ssh to it.  
+  
+    
+#### 2.) Install the `sysstat` package (which provides the `sar` binary), and install the following script under `/etc/init.d/`, alternatively if you're working outside of amazonlinux (centos, ubuntu, etc) it is recommended to create a systemd service which accomplishes the same task as the script included in this repo: https://github.com/Node0/node-monitoring-agent/blob/master/agent/helper_scripts/realtime-sar  The underlying purpose of utilizing `sar` in this manner is to create a deamonized service which is constantly writing cpu statistics (utilizes less than 0.5% of cpu load) to `/var/log/sar/cpuPercStat.log` on the system undergoing monitoring (where the agent is installed), this file acts as a cpu load percentage buffer and the agent 'skims' the last N seconds of cpu statistics (3 seconds is optimal for a clean cpu load signal free of jitter) in the NodeJS code by utilizing `tail -n3` of the `/var/log/sar/cpuPercStat.log` file before piping the lines to awk for preparation into a comma separated textual structure which is processed and then averaged in NodeJS to derive the average CPU load within the last 3 seconds. It would have been nice to have had the time and/or knowldge of linux kernel module creation in order to create a kernal module which reports cpu usage in percentage terms constantly available under `/proc` (`/proc` provides 'ticks', and not results in percentage terms), though I suppose then I might just have well have written a node module that interprets the ticks and provides output in percentage terms, in any case `sar` provides this readily out of the box. A cron job should be setup to truncate the all but the last 3 lines of `/var/log/sar/cpuPercStat.log` every half hour or so.   
+   
+   
 
-#### 2.) Create a user named `ec2-agent` on your candidate ec2 machine of choice, under that home directory create a folder called `agent` copy the contents of the `agent` folder from this repo to that directory.
+#### 3.) Create a user named `ec2-agent` on your candidate ec2 machine of choice, under that home directory create a folder called `agent` copy the contents of the `agent` folder from this repo to that directory.
   
-#### 3.) Run `npm install` to get the dependencies installed.
-#### 4.) Run `node monitoring-agent.js` to startup the monitoring agent server.  
+#### 4.) Run `npm install` to get the dependencies installed.
+#### 5.) Run `node monitoring-agent.js` to startup the monitoring agent server.  
   
-#### 5.) In production you'll also need to setup a systemd service that starts the monitoring agent upon startup.  
+#### 6.) In production you'll also need to setup a systemd service that starts the monitoring agent upon startup.  
 ####     PM2 is the recommended process manager to call from systemd for this purpose. 
   
     
