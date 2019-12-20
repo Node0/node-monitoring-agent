@@ -3,14 +3,14 @@ A temporally high resolution Nodejs based montoring system for EC2.
   
 ## Crate DB setup.  
 
-### You'll need to install CrateDB (https://crate.io/download/)  
-### For the purposes of this demonstration you may install the Crate database on the same EC2 machine as  
-### the monitoring server. For production deployments, an independent Crate DB cluster of at least 3 machines is recommended.  
-### to keep things tidy, you can setup an A record using Route53 and point it to a set of private IPs that are the master and master  
-### candidates as configured in `/etc/crate/crate.conf`. It is helpful to have Elasticsearch knowledge when reasoning about CrateDB.  
+#### You'll need to install CrateDB (https://crate.io/download/)  
+#### For the purposes of this demonstration you may install the Crate database on the same EC2 machine as  
+#### the monitoring server. For production deployments, an independent Crate DB cluster of at least 3 machines is recommended.  
+#### to keep things tidy, you can setup an A record using Route53 and point it to a set of private IPs that are the master and master  
+#### candidates as configured in `/etc/crate/crate.conf`. It is helpful to have Elasticsearch knowledge when reasoning about CrateDB.  
   
     
-### Utilize the SQL schema files available under: `SQL/SQL_table_schemas` in order to create the tables which the server requires in order to function. You can actually enter this SQL directly from CrateDB's web administration console as it features a nice SQL terminal.  
+#### Utilize the SQL schema files available under: `SQL/SQL_table_schemas` in order to create the tables which the server requires in order to function. You can actually enter this SQL directly from CrateDB's web administration console as it features a nice SQL terminal.  
   
   
     
