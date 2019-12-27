@@ -1,5 +1,5 @@
 # node-monitoring-agent
-#### A temporally high resolution Nodejs based (Updates at 1 Hz, which cloudwatch does not provide as a matter of course) montoring system for EC2. I'm perfectly aware that this is niche, and not everybody wants systems data at 1 second resolution, however if you did, here is a relatively straightforward way to obtain such data.
+#### A temporally high resolution Nodejs based (Updates at 1 Hz, which cloudwatch does not provide as a matter of course) monitoring system for EC2. I'm perfectly aware that this is niche, and not everybody wants systems data at 1 second resolution, however if you did, here is a relatively straightforward (albeit somewhat of a systems admin & unix'y) way to obtain such data.
   
 ## Crate DB setup.  
 
