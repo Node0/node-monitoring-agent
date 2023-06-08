@@ -1,5 +1,28 @@
 # node-monitoring-agent
 #### A temporally high resolution Nodejs based (Updates at 1 Hz, which cloudwatch does not provide as a matter of course) monitoring system for EC2. I'm perfectly aware that this is niche, and not everybody wants systems data at 1 second resolution, however if you did, here is a relatively straightforward (albeit somewhat of a systems admin & unix'y) way to obtain such data.
+
+## Commentary by present-Joe looking at past-Joe's work:  
+
+```JS
+ /*
+ * See, we all make similar evolutionary foibles as we learn, just look at the awk horror of the agent code.
+ * (I'm critiquing myself so it's ok to use stronger language).
+ * Don't get me wrong, kudos past-Joe for sticking with it, and making that agent work as you did
+ * from as first-ish principles as your sys-admin skillset at the time afforded you.
+ * Given the same need I'd likely not build a monitoring agent like this today, like at all.
+ * I'd probably leverage collectd or prometheus, and if forced to build one from the ground up...
+ * Then it would likely be built in Go, or Rust.
+ * A small memory-efficient binary with ENV var checks with fallback to runtime args
+ * for guidance on how to behave (frequency of collection, cpu sample set, mothership / cluster urls/ips, and so on).
+ *
+ * But I give you 4 stars (out of 5) past-Joe for making this work because
+ * you hadn't ever written a single NodeJS program before, also thanks Armen F. for seeing the initiative
+ * and actually letting me run this thing, you're a great tech leader.
+ *
+ * Alas past-Joe, you didn't know any better, so kudos for the results.
+ * Today a PR like this would be rejected, but that's called evolution. 
+ */
+```
   
 ## Crate DB setup.  
 
